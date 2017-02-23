@@ -8,7 +8,12 @@
 package roadgraph;
 
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -24,6 +29,8 @@ import util.GraphLoader;
  */
 public class MapGraph {
 	//TODO: Add your member variables here in WEEK 3
+	private HashMap<GeographicPoint, MapNode> vertices;
+	
 	
 	
 	/** 
@@ -32,6 +39,7 @@ public class MapGraph {
 	public MapGraph()
 	{
 		// TODO: Implement in this constructor in WEEK 3
+		this.vertices = new HashMap<GeographicPoint, MapNode>();
 	}
 	
 	/**
@@ -41,7 +49,7 @@ public class MapGraph {
 	public int getNumVertices()
 	{
 		//TODO: Implement this method in WEEK 3
-		return 0;
+		return this.vertices.size();
 	}
 	
 	/**
@@ -51,7 +59,7 @@ public class MapGraph {
 	public Set<GeographicPoint> getVertices()
 	{
 		//TODO: Implement this method in WEEK 3
-		return null;
+		return vertices.keySet();
 	}
 	
 	/**
@@ -61,7 +69,15 @@ public class MapGraph {
 	public int getNumEdges()
 	{
 		//TODO: Implement this method in WEEK 3
-		return 0;
+		HashSet<MapEdge> edgeSet = new HashSet<MapEdge>();
+		for (MapNode v : vertices.values()){
+			for (MapEdge e : v.getEdges()){
+				if (edgeSet.contains(e) == false){
+					edgeSet.add(e);
+				}
+			}
+		}
+		return edgeSet.size();
 	}
 
 	
@@ -76,7 +92,13 @@ public class MapGraph {
 	public boolean addVertex(GeographicPoint location)
 	{
 		// TODO: Implement this method in WEEK 3
-		return false;
+		if (vertices.containsKey(location)){
+			return false;	
+		}
+		else{
+			vertices.put(location, new MapNode(location));
+			return true;
+		}
 	}
 	
 	/**
@@ -96,6 +118,21 @@ public class MapGraph {
 
 		//TODO: Implement this method in WEEK 3
 		
+		/*
+		if (!vertices.containsKey(from) || !vertices.containsKey(to)){
+			throw new IllegalArgumentException();
+		}
+		else if (roadName == null || roadType == null){
+			throw new IllegalArgumentException();
+		}
+		else if (length <= 0){
+			throw new IllegalArgumentException();
+		}
+		
+		*/
+		
+		MapEdge newEdge = new MapEdge(from, to, roadName, roadType, length);
+		vertices.get(from).getEdges().add(newEdge);
 	}
 	
 
@@ -124,11 +161,55 @@ public class MapGraph {
 			 					     GeographicPoint goal, Consumer<GeographicPoint> nodeSearched)
 	{
 		// TODO: Implement this method in WEEK 3
+		Queue<MapNode> q = new LinkedList<MapNode>();
+		MapNode curr;
+		HashSet<MapNode> visited = new HashSet<MapNode>();
+		HashMap<GeographicPoint, GeographicPoint> paths = new HashMap<GeographicPoint, GeographicPoint>();
+		List<GeographicPoint> path = new LinkedList<GeographicPoint>();
+		
+		curr = vertices.get(start);
+		visited.add(curr);
+		q.add(curr);
+		
+		while(!q.isEmpty() && !curr.getLocation().equals(goal)){
+			if(curr.getEdges().size() >= 1){
+				for(MapEdge e : curr.getEdges()){
+					if(visited.contains(e.getEndPoint()) == false){
+						MapNode nextNode = vertices.get(e.getEndPoint());
+						q.add(nextNode);
+						paths.put(nextNode.getLocation(), curr.getLocation());
+					}
+				}
+			}
+			q.poll();
+			if (q.isEmpty() == false){
+				curr = q.peek();
+				visited.add(curr);
+			}
+		}
 		
 		// Hook for visualization.  See writeup.
 		//nodeSearched.accept(next.getLocation());
+		
+		GeographicPoint temp = goal;
+		path.add(0, temp);
+		
+		while(true){
+			if(temp.equals(start) || !paths.containsKey(temp)){
+				break;
+			}
+			else{
+				temp = paths.get(temp);
+				path.add(0, temp);
+			}
+		}
 
-		return null;
+		if (path.size() == 1){
+			return null;
+		}
+		else{
+			return path;
+		}
 	}
 	
 
