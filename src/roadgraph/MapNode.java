@@ -11,6 +11,7 @@ class MapNode implements Comparable<MapNode>
 	private GeographicPoint location;
 	private Double priority;
 	private Double distFrom;
+	private Double timeFrom;
 
 	MapNode(GeographicPoint loc)
 	{
@@ -18,6 +19,7 @@ class MapNode implements Comparable<MapNode>
 		edges = new HashSet<MapEdge>();
 		priority = Double.POSITIVE_INFINITY;
 		distFrom = Double.POSITIVE_INFINITY;
+		timeFrom = Double.POSITIVE_INFINITY;
 	}
 
 	void addEdge(MapEdge edge)
@@ -52,12 +54,20 @@ class MapNode implements Comparable<MapNode>
 		return distFrom;
 	}
 	
+	Double getTimeFrom(){
+		return timeFrom;
+	}
+	
 	void setPriority(Double prio){
 		priority = prio;
 	}
 	
 	void setDistFrom(Double dist){
 		distFrom = dist;
+	}
+	
+	void setTimeFrom(Double time){
+		timeFrom = time;
 	}
 	
 	@Override

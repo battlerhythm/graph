@@ -57,6 +57,11 @@ class MapEdge
 	{
 		return roadName;
 	}
+	
+	public String getRoadType()
+	{
+		return roadType;
+	}
 
 	MapNode getOtherNode(MapNode node)
 	{

@@ -275,9 +275,11 @@ public class MapGraph {
 				Set<MapNode>neighbors = getNeighbors(next);
 				for (MapNode neighbor : neighbors){
 					if (!visited.contains(neighbor)){
-						Double dist = distanceBetween(next, neighbor);
-						if (neighbor.getPriority() >= next.getPriority() + dist){
-							neighbor.setPriority(next.getPriority() + dist);
+						MapEdge edge = findEdge(next, neighbor);
+						Double dist = edge.getLength();
+						Double speedLimit = getSpeedLimit(edge);
+						if (neighbor.getPriority() >= next.getPriority() + (dist/speedLimit)){
+							neighbor.setPriority(next.getPriority() + (dist/speedLimit));
 							parentMap.put(neighbor, next);
 							toExplore.add(neighbor);
 						}
@@ -303,6 +305,28 @@ public class MapGraph {
 			}
 		}
 		return dist;
+	}
+	
+	private MapEdge findEdge(MapNode a, MapNode b){
+		for(MapEdge e : edges){
+			if(e.getStartPoint().equals(a.getLocation()) && e.getEndPoint().equals(b.getLocation())){
+				return e;
+			}
+		}
+		return null;
+	}
+	
+	private Double getSpeedLimit(MapEdge e){
+		String roadType = e.getRoadType();
+		if (roadType.contains("residential")){
+			return 48.28;
+		}
+		else if (roadType.contains("Motorway")){
+			return 104.60;
+		}
+		else{
+			return 88.51;
+		}
 	}
 	
 	/** Find the path from start to goal using A-Star search
@@ -346,8 +370,9 @@ public class MapGraph {
 		HashMap<MapNode,MapNode> parentMap = new HashMap<MapNode,MapNode>();
 		Queue<MapNode> toExplore = new PriorityQueue<MapNode>();
 		HashSet<MapNode> visited = new HashSet<MapNode>();
-		startNode.setPriority(startNode.getLocation().distance(endNode.getLocation()));
+		startNode.setPriority((startNode.getLocation().distance(endNode.getLocation()))/104.60);
 		startNode.setDistFrom(0.0);
+		startNode.setTimeFrom(0.0);
 		toExplore.add(startNode);
 		MapNode next = null;
 		
@@ -366,12 +391,18 @@ public class MapGraph {
 				for (MapNode neighbor : neighbors){
 					
 					if (!visited.contains(neighbor)){
-						Double dist = distanceBetween(next, neighbor);
+						MapEdge edge = findEdge(next, neighbor);
+						Double dist = edge.getLength();
+						Double speedLimit = getSpeedLimit(edge);
 						Double hDist = neighbor.getLocation().distance(goal);
+						Double hSpeed = 104.60;
 						
-						if (neighbor.getDistFrom() >= next.getDistFrom() + dist){
-							neighbor.setPriority(next.getDistFrom() + dist + hDist);
+						if (neighbor.getTimeFrom() >= next.getTimeFrom() + (dist/speedLimit)){
+							
+							neighbor.setPriority(next.getTimeFrom() + (dist/speedLimit) + (hDist/hSpeed));
 							neighbor.setDistFrom(next.getDistFrom() + dist);
+							neighbor.setTimeFrom(next.getTimeFrom() + (dist/speedLimit));
+							
 							parentMap.put(neighbor, next);
 							toExplore.add(neighbor);
 						}
