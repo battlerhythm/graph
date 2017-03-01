@@ -1,41 +1,114 @@
 package roadgraph;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import geography.GeographicPoint;
 
-public class MapNode {
+class MapNode implements Comparable<MapNode>
+{
+	private HashSet<MapEdge> edges;
 	private GeographicPoint location;
-	private List<MapEdge> edges;
-	
+	private Double priority;
+	private Double distFrom;
 
-	
-	public MapNode(){
-		super();
-		this.location = null;
-		this.edges = null;
+	MapNode(GeographicPoint loc)
+	{
+		location = loc;
+		edges = new HashSet<MapEdge>();
+		priority = Double.POSITIVE_INFINITY;
+		distFrom = Double.POSITIVE_INFINITY;
+	}
+
+	void addEdge(MapEdge edge)
+	{
+		edges.add(edge);
+	}
+
+	Set<MapNode> getNeighbors()
+	{
+		Set<MapNode> neighbors = new HashSet<MapNode>();
+		for (MapEdge edge : edges) {
+			neighbors.add(edge.getOtherNode(this));
+		}
+		return neighbors;
+	}
+
+	GeographicPoint getLocation()
+	{
+		return location;
+	}
+
+	Set<MapEdge> getEdges()
+	{
+		return edges;
 	}
 	
-	public MapNode(GeographicPoint loc){
-		this.location = loc;
-		this.edges = new ArrayList<MapEdge>();
+	Double getPriority(){
+		return priority;
 	}
 	
-	public MapNode(GeographicPoint loc, List<MapEdge> listOfEdges){
-		this.location = loc;
-		this.edges = listOfEdges;
+	Double getDistFrom(){
+		return distFrom;
 	}
 	
-	public GeographicPoint getLocation(){
-		return this.location;
+	void setPriority(Double prio){
+		priority = prio;
 	}
 	
-	public List<MapEdge> getEdges(){
-		return this.edges;
+	void setDistFrom(Double dist){
+		distFrom = dist;
 	}
 	
+	@Override
+	public boolean equals(Object o)
+	{
+		if (!(o instanceof MapNode) || (o == null)) {
+			return false;
+		}
+		MapNode node = (MapNode)o;
+		return node.location.equals(this.location);
+	}
 	
+	@Override
+	public int hashCode()
+	{
+		return location.hashCode();
+	}
+	
+	@Override
+	public String toString()
+	{
+		String toReturn = "[NODE at location (" + location + ")";
+		toReturn += " intersects streets: ";
+		for (MapEdge e: edges) {
+			toReturn += e.getRoadName() + ", ";
+		}
+		toReturn += "]";
+		return toReturn;
+	}
+
+	public String roadNamesAsString()
+	{
+		String toReturn = "(";
+		for (MapEdge e: edges) {
+			toReturn += e.getRoadName() + ", ";
+		}
+		toReturn += ")";
+		return toReturn;
+	}
+
+	@Override
+	public int compareTo(MapNode o) {
+		// TODO Auto-generated method stub
+		
+		if (this.priority >= o.priority){
+			return 1;
+		}
+		else{
+			return -1;
+		}
+	}
 	
 
 }
